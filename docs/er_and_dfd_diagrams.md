@@ -103,27 +103,29 @@ graph TD
 
     CoreServices["Protected Web Services"]
 
-    Client -->|"Inbound Request"| P1
-    P1 -->|"Parsed Metadata (IP, UA, URI)"| P2
+    Client -->|"Inbound HTTP Request"| P1
+    P1 -->|"Parsed Metadata (IP, UA, Route)"| P2
     P1 -->|"Log Stream"| D2
 
-    P2 <-->|"Check Active Quarantine"| D1
-    P2 -- "Blocked IP" -->|"HTTP 429 + Retry-After"| Client
-    P2 -- "Clean IP" --> P3
+    P2 -->|"Query Active Quarantine"| D1
+    D1 -->|"Quarantine Status"| P2
+    P2 -->|"Blocked: HTTP 429 + Retry-After"| Client
+    P2 -->|"Clean IP Traffic"| P3
 
-    P3 <-->|"Sliding Window Hit Counters"| D2
-    P3 -- "Threat Detected" --> P4
-    P3 -- "Pass (Within Quotas)" --> CoreServices
+    P3 -->|"Sliding Window Hit Counters"| D2
+    P3 -->|"Threat Detected"| P4
+    P3 -->|"Pass: Within Safe Limits"| CoreServices
 
-    P4 -->|"Insert/Update Blocked IP with TTL"| D1
-    P4 -->|"Log Forensics Record"| D3
+    P4 -->|"Store Quarantined IP with TTL"| D1
+    P4 -->|"Store Incident Forensics"| D3
 
-    Admin -->|"Login / Register"| P6
-    P6 <-->|"Validate Credentials"| D4
+    Admin -->|"Login / Register Credentials"| P6
+    P6 -->|"Validate Credentials"| D4
+    D4 -->|"Token & User Role"| P6
 
-    Admin -->|"Query Metrics / Unblock IP"| P5
-    P5 <-->|"Read Metrics & Incidents"| D3
-    P5 <-->|"Manage Active Blocks"| D1
+    Admin -->|"Query Metrics & Manual Overrides"| P5
+    P5 -->|"Fetch Attack Incidents"| D3
+    P5 -->|"Manage Active Blocks"| D1
 ```
 
 ---
@@ -147,17 +149,20 @@ graph TD
         P4_3(("4.3<br/>Self-Healing TTL<br/>Cooldown Timer"))
     end
 
-    BlocklistDB[("D1: Blocklist")]
-    IncidentsDB[("D3: Incidents")]
+    BlocklistDB[("D1: Blocklist Store")]
+    IncidentsDB[("D3: Incident Logs")]
 
-    CleanTraffic --> P3_1 & P3_2 & P3_3 & P3_4
+    CleanTraffic --> P3_1
+    CleanTraffic --> P3_2
+    CleanTraffic --> P3_3
+    CleanTraffic --> P3_4
 
-    P3_1 -- "Rate > 60 req/min" --> P4_1
-    P3_2 -- "Shared UA across >= 3 IPs" --> P4_1
-    P3_3 -- "Endpoint surge > 30 req/min" --> P4_1
-    P3_4 -- "Harmonic spike > 3.5x average" --> P4_2
+    P3_1 -->|"Rate > 60 req/min"| P4_1
+    P3_2 -->|"Shared UA across >= 3 IPs"| P4_1
+    P3_3 -->|"Endpoint surge > 30 req/min"| P4_1
+    P3_4 -->|"Harmonic spike > 3.5x average"| P4_2
 
-    P4_1 -->|"Quarantine IP"| BlocklistDB
+    P4_1 -->|"Quarantine Offender IP"| BlocklistDB
     P4_1 --> P4_2
     P4_2 -->|"Write Incident Log"| IncidentsDB
     P4_1 --> P4_3
