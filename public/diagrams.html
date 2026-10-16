@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Architecture: ER & DFD Visual Diagrams | DRDO Capstone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.8);
+      --border: rgba(56, 189, 248, 0.2);
+      --accent: #38bdf8;
+      --accent-cyan: #00f2fe;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      padding: 30px 20px;
+      min-height: 100vh;
+    }
+    .header {
+      max-width: 1200px;
+      margin: 0 auto 30px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+    .title h1 { font-size: 1.8rem; font-weight: 800; color: #fff; }
+    .title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+    .nav-links a {
+      color: var(--accent);
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: rgba(56, 189, 248, 0.1);
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+    .diagram-container {
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 12px;
+    }
+    .diagram-header h2 {
+      font-size: 1.3rem;
+      color: var(--accent-cyan);
+    }
+    .diagram-badge {
+      font-size: 0.75rem;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    .diagram-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .mermaid-box {
+      background: #040812;
+      border-radius: 12px;
+      padding: 24px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title">
+      <h1>Cloud DDoS Protection — Visual System Diagrams</h1>
+      <p>Entity-Relationship (ER) Diagram & Multi-Level Data Flow Diagrams (DFD)</p>
+    </div>
+    <div class="nav-links">
+      <a href="/">← Back to SecOps Dashboard</a>
+    </div>
+  </div>
+
+  <!-- 1. ER Diagram -->
+  <div class="diagram-container">
+    <div class="diagram-header">
+      <h2>1. Entity-Relationship (ER) Diagram</h2>
+      <span class="diagram-badge">Database Architecture</span>
+    </div>
+    <p class="diagram-desc">
+      Illustrates the database relational schema: <strong>USERS</strong> (credentials & RBAC), <strong>BLOCKED_IPS</strong> (quarantined IP records with self-healing TTL countdowns), <strong>ATTACK_EVENTS</strong> (DDoS forensics audit trail), and <strong>TRAFFIC_LOGS</strong> (telemetry ingestion).
+    </p>
+    <div class="mermaid-box">
+      <pre class="mermaid">
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string email UK
+        string password_hash
+        string role
+        datetime created_at
+    }
+
+    BLOCKED_IPS {
+        int id PK
+        string ip_address
+        string reason
+        string pattern_detected
+        datetime blocked_at
+        datetime expires_at
+        int is_active
+    }
+
+    ATTACK_EVENTS {
+        int id PK
+        string pattern_name
+        string source_ip
+        string target_endpoint
+        int request_count
+        string severity
+        text details
+        datetime timestamp
+    }
+
+    TRAFFIC_LOGS {
+        int id PK
+        string client_ip
+        string method
+        string endpoint
+        int status_code
+        float response_time_ms
+        string user_agent
+        datetime timestamp
+    }
+
+    USERS ||--o{ BLOCKED_IPS : "manually unblocks"
+    ATTACK_EVENTS ||--|| BLOCKED_IPS : "triggers quarantine"
+    TRAFFIC_LOGS }o--o| ATTACK_EVENTS : "evaluated into"
+      </pre>
+    </div>
+  </div>
+
+  <!-- 2. DFD Level 0 -->
+  <div class="diagram-container">
+    <div class="diagram-header">
+      <h2>2. DFD Level 0: Context Diagram</h2>
+      <span class="diagram-badge">System Boundary</span>
+    </div>
+    <p class="diagram-desc">
+      Context Level diagram showing external entities (Legitimate Clients, Attackers/Botnets, SecOps Administrators) interfacing with the Cloud DDoS Protection Gateway and upstream Cloud Services.
+    </p>
+    <div class="mermaid-box">
+      <pre class="mermaid">
+graph LR
+    Client["👤 Legitimate Client"]
+    Attacker["👾 Malicious Attacker / Botnet"]
+    Admin["🛡️ SecOps Admin / Analyst"]
+    System(("0.0<br/>Cloud DDoS Protection<br/>& Mitigation System"))
+    CloudServices["☁️ Protected Cloud Backend"]
+
+    Client -->|"HTTP Requests"| System
+    System -->|"200 OK & Service Data"| Client
+
+    Attacker -.->|"Volumetric Floods & L7 Attacks"| System
+    System -.->|"HTTP 429 Too Many Requests"| Attacker
+
+    Admin -->|"Credentials & Manual Overrides"| System
+    System -->|"Real-time Telemetry & Incident Logs"| Admin
+
+    System -->|"Sanitized Clean Traffic"| CloudServices
+    CloudServices -->|"Response Payload"| System
+      </pre>
+    </div>
+  </div>
+
+  <!-- 3. DFD Level 1 -->
+  <div class="diagram-container">
+    <div class="diagram-header">
+      <h2>3. DFD Level 1: Subsystem Functional Decomposition</h2>
+      <span class="diagram-badge">Process Architecture</span>
+    </div>
+    <p class="diagram-desc">
+      Decomposes the Gateway into its 6 core operational processes and 4 data stores (Telemetry Buffer, Blocklist TTL Store, Attack Incidents DB, and User Credentials).
+    </p>
+    <div class="mermaid-box">
+      <pre class="mermaid">
+graph TD
+    Client["Client / Attacker Traffic"]
+    Admin["SecOps Administrator"]
+
+    D1[("D1: Blocklist Store (TTL Cache)")]
+    D2[("D2: Real-time Telemetry Buffer")]
+    D3[("D3: Attack Incidents DB")]
+    D4[("D4: User Credentials DB")]
+
+    P1(("1.0<br/>Traffic Ingestion &<br/>Telemetry Collector"))
+    P2(("2.0<br/>Edge Quarantine<br/>Filter"))
+    P3(("3.0<br/>Multi-Pattern DDoS<br/>Detection Engine"))
+    P4(("4.0<br/>Automated Mitigation<br/>& Auto-Recovery"))
+    P5(("5.0<br/>SecOps Monitoring &<br/>Analytics Service"))
+    P6(("6.0<br/>Auth & Access Control<br/>(RBAC)"))
+
+    CoreServices["Protected Web Services"]
+
+    Client -->|"Inbound Request"| P1
+    P1 -->|"Parsed Metadata"| P2
+    P1 -->|"Log Stream"| D2
+
+    P2 <-->|"Check Active Quarantine"| D1
+    P2 -- "Blocked IP" -->|"HTTP 429 + Retry-After"| Client
+    P2 -- "Clean IP" --> P3
+
+    P3 <-->|"Sliding Window Counters"| D2
+    P3 -- "Threat Detected" --> P4
+    P3 -- "Pass (Within Quotas)" --> CoreServices
+
+    P4 -->|"Insert/Update Block with TTL"| D1
+    P4 -->|"Log Incident Record"| D3
+
+    Admin -->|"Login / Register"| P6
+    P6 <-->|"Validate Credentials"| D4
+
+    Admin -->|"Query Metrics / Unblock"| P5
+    P5 <-->|"Read Incidents"| D3
+    P5 <-->|"Manage Active Blocks"| D1
+      </pre>
+    </div>
+  </div>
+
+  <!-- 4. DFD Level 2 -->
+  <div class="diagram-container">
+    <div class="diagram-header">
+      <h2>4. DFD Level 2: Anomaly Detection & Mitigation Core</h2>
+      <span class="diagram-badge">Algorithm Breakdown</span>
+    </div>
+    <p class="diagram-desc">
+      Deep-dive into the 4 attack pattern detectors defined in the DRDO problem statement and the automated self-healing cooldown loop.
+    </p>
+    <div class="mermaid-box">
+      <pre class="mermaid">
+graph TD
+    CleanTraffic["Traffic Passed by Edge Filter"]
+
+    subgraph DetectionEngine["3.0 Multi-Pattern Detection Engine"]
+        P3_1(("3.1 Pattern 1:<br/>Single IP Volumetric<br/>Sliding Window Counter"))
+        P3_2(("3.2 Pattern 2:<br/>Botnet Fingerprint<br/>Entropy Clustering"))
+        P3_3(("3.3 Pattern 3:<br/>Targeted Endpoint<br/>Surge Monitor"))
+        P3_4(("3.4 Pattern 4:<br/>Time-Series Periodic<br/>Harmonic Pulse Detector"))
+    end
+
+    subgraph MitigationCore["4.0 Auto-Mitigation & Recovery"]
+        P4_1(("4.1 Quarantine Enforcer<br/>(Issue HTTP 429)"))
+        P4_2(("4.2 Incident Forensics<br/>Logger"))
+        P4_3(("4.3 Self-Healing TTL<br/>Cooldown Timer"))
+    end
+
+    BlocklistDB[("D1: Blocklist")]
+    IncidentsDB[("D3: Incidents")]
+
+    CleanTraffic --> P3_1 & P3_2 & P3_3 & P3_4
+
+    P3_1 -- "Rate > 60 req/min" --> P4_1
+    P3_2 -- "Shared UA across >= 3 IPs" --> P4_1
+    P3_3 -- "Endpoint surge > 30 req/min" --> P4_1
+    P3_4 -- "Harmonic spike > 3.5x average" --> P4_2
+
+    P4_1 -->|"Quarantine Offender IP"| BlocklistDB
+    P4_1 --> P4_2
+    P4_2 -->|"Write Forensics Record"| IncidentsDB
+    P4_1 --> P4_3
+    P4_3 -->|"Auto-Expire Quarantine after 30s"| BlocklistDB
+      </pre>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#040812',
+        primaryColor: '#0f172a',
+        primaryTextColor: '#f8fafc',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#38bdf8',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#090d16'
+      }
+    });
+  </script>
+</body>
+</html>
