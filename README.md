@@ -91,7 +91,7 @@ cp .env.example .env
 ```
 Default `.env` settings:
 ```properties
-PORT=5000
+PORT=5050
 NODE_ENV=development
 JWT_SECRET=super_secret_capstone_jwt_key_2024_drdo
 RATE_LIMIT_WINDOW_MS=60000
@@ -108,7 +108,7 @@ npm start
 # Or start with automatic file reloading
 npm run dev
 ```
-The server will bind to `http://localhost:5000`.
+The server will bind to `http://localhost:5050`.
 
 ### 5. Running the Automated Test Suite
 ```bash

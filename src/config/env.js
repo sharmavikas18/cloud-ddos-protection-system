@@ -2,7 +2,7 @@ const path = require('path');
 require('dotenv').config();
 
 module.exports = {
-  port: parseInt(process.env.PORT, 10) || 5000,
+  port: parseInt(process.env.PORT, 10) || 5050,
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'fallback_development_secret_key_change_in_prod',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',

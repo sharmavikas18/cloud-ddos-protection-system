@@ -7,7 +7,7 @@
 
 const http = require('http');
 
-const BASE_URL = process.env.TARGET_URL || 'http://localhost:5000';
+const BASE_URL = process.env.TARGET_URL || 'http://localhost:5050';
 const parsedUrl = new URL(BASE_URL);
 
 function sendRequest({ path = '/api/services/public', method = 'GET', ip = '127.0.0.1', userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }) {
