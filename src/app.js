@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const { trafficCollector } = require('./middleware/trafficCollector');
 const ipBlocklistMiddleware = require('./middleware/ipBlocklist');
@@ -17,12 +18,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static frontend assets
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Non-blocking telemetry ingestion
 app.use(trafficCollector);
 
 // Edge DDoS Protection Layers
 app.use(ipBlocklistMiddleware);
 app.use(rateLimiterMiddleware);
+
+// Root route - SecOps Operations Command Center Dashboard
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // Cloud High Availability & Health probe
 app.get('/health', (req, res) => {

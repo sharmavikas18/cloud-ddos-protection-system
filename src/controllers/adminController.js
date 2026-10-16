@@ -47,6 +47,25 @@ class AdminController {
       unblocked: success
     });
   }
+
+  static async triggerSimulation(req, res) {
+    const { pattern = 'pattern1' } = req.body;
+    const simulator = require('../../tools/attack-simulator');
+    try {
+      if (pattern === 'pattern1') {
+        await simulator.simulatePattern1SingleIpFlood(65);
+      } else if (pattern === 'pattern2') {
+        await simulator.simulatePattern2BotnetCluster(35);
+      } else if (pattern === 'pattern3') {
+        await simulator.simulatePattern3EndpointSurge(40);
+      } else {
+        await simulator.simulateNormalTraffic(5);
+      }
+      res.json({ success: true, message: `Simulation for ${pattern} completed successfully.` });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
 }
 
 module.exports = AdminController;

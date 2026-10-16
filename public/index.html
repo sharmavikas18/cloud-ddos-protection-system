@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud DDoS Protection Gateway | SecOps Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+  <div class="background-glow"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="container">
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="logo-shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">CLOUD DDoS GUARD <span>v1.0</span></div>
+          <div class="brand-subtitle">SAG DRDO Capstone Defense Architecture</div>
+        </div>
+      </div>
+      <div class="system-status">
+        <div class="status-indicator pulsating" id="statusIndicator"></div>
+        <span class="status-text" id="statusText">GATEWAY ACTIVE</span>
+        <span class="uptime-badge" id="uptimeBadge">UPTIME: 0s</span>
+      </div>
+    </header>
+
+    <!-- Metrics Stat Cards -->
+    <section class="metrics-grid">
+      <div class="glass-card stat-card">
+        <div class="stat-header">
+          <span class="stat-label">LIVE THROUGHPUT</span>
+          <span class="stat-icon rps-icon">⚡</span>
+        </div>
+        <div class="stat-value" id="currentRps">0.0 <span class="unit">RPS</span></div>
+        <div class="stat-footer">Sliding 10-second rolling window</div>
+      </div>
+
+      <div class="glass-card stat-card">
+        <div class="stat-header">
+          <span class="stat-label">TOTAL INGESTED</span>
+          <span class="stat-icon total-icon">🌐</span>
+        </div>
+        <div class="stat-value" id="totalRequests">0</div>
+        <div class="stat-footer">Telemetry ingestion buffer</div>
+      </div>
+
+      <div class="glass-card stat-card">
+        <div class="stat-header">
+          <span class="stat-label">QUARANTINED / MITIGATED</span>
+          <span class="stat-icon blocked-icon">🛡️</span>
+        </div>
+        <div class="stat-value highlight-red" id="blockedRequests">0</div>
+        <div class="stat-footer" id="mitigationEfficiency">0% threat mitigation</div>
+      </div>
+
+      <div class="glass-card stat-card">
+        <div class="stat-header">
+          <span class="stat-label">ACTIVE QUARANTINES</span>
+          <span class="stat-icon alert-icon">🔒</span>
+        </div>
+        <div class="stat-value highlight-cyan" id="activeBlocksCount">0</div>
+        <div class="stat-footer">Self-healing cooldown active</div>
+      </div>
+    </section>
+
+    <!-- Main Workspace Grid -->
+    <div class="dashboard-grid">
+      <!-- Left Column: Attack Simulation Bench & Service Prober -->
+      <div class="left-column">
+        <!-- Attack Simulator Card -->
+        <div class="glass-card panel-card">
+          <div class="panel-header">
+            <h3>⚡ Attack Simulation & Verification Tool</h3>
+            <span class="badge badge-primary">DRDO Bench</span>
+          </div>
+          <p class="panel-desc">Generate real-time synthetic DDoS attack vectors to test automatic mitigation and self-healing recovery.</p>
+          
+          <div class="simulator-buttons">
+            <button class="btn btn-normal" onclick="triggerSimulation('normal')" id="btnNormal">
+              <span class="btn-icon">🟢</span>
+              <div class="btn-info">
+                <strong>Legitimate Traffic</strong>
+                <small>5 valid user requests</small>
+              </div>
+            </button>
+
+            <button class="btn btn-danger" onclick="triggerSimulation('pattern1')" id="btnP1">
+              <span class="btn-icon">🔴</span>
+              <div class="btn-info">
+                <strong>Pattern 1: Single IP Flood</strong>
+                <small>65 rapid volumetric bursts (203.0.113.55)</small>
+              </div>
+            </button>
+
+            <button class="btn btn-danger" onclick="triggerSimulation('pattern3')" id="btnP3">
+              <span class="btn-icon">🟡</span>
+              <div class="btn-info">
+                <strong>Pattern 3: Target Surge</strong>
+                <small>40 requests on /api/services/heavy</small>
+              </div>
+            </button>
+
+            <button class="btn btn-danger" onclick="triggerSimulation('pattern2')" id="btnP2">
+              <span class="btn-icon">🟣</span>
+              <div class="btn-info">
+                <strong>Pattern 2: Botnet Cluster</strong>
+                <small>Multi-IP shared User-Agent attack</small>
+              </div>
+            </button>
+          </div>
+
+          <div class="console-box" id="simConsole">
+            <div class="console-header">
+              <span>SIMULATION CONSOLE</span>
+              <button class="btn-clear" onclick="clearConsole()">Clear</button>
+            </div>
+            <pre class="console-output" id="consoleOutput">Ready. Select an attack pattern above to verify automated defense...</pre>
+          </div>
+        </div>
+
+        <!-- Service Test Bench Card -->
+        <div class="glass-card panel-card">
+          <div class="panel-header">
+            <h3>🌐 Protected Cloud Web Services Probe</h3>
+            <span class="badge badge-success">High Availability</span>
+          </div>
+          <p class="panel-desc">Test protected cloud endpoints to verify that legitimate services remain available even during an ongoing attack.</p>
+          
+          <div class="service-actions">
+            <button class="btn btn-outline" onclick="probeService('/api/services/public')">
+              Test Public Portal <code>/api/services/public</code>
+            </button>
+            <button class="btn btn-outline" onclick="probeService('/api/services/heavy')">
+              Test Compute API <code>/api/services/heavy</code>
+            </button>
+            <button class="btn btn-outline" onclick="probeService('/health')">
+              Health Check Probe <code>/health</code>
+            </button>
+          </div>
+          <div class="probe-result" id="probeResult">Status: Ready to probe</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Quarantined IPs & Forensics Log -->
+      <div class="right-column">
+        <!-- Active Quarantined Blocklist Card -->
+        <div class="glass-card panel-card">
+          <div class="panel-header">
+            <h3>🔒 Active Quarantined IPs (Edge Filter)</h3>
+            <span class="badge badge-warning" id="blocklistBadge">0 Quarantined</span>
+          </div>
+          <p class="panel-desc">Offending IPs automatically blocked by the edge filter with self-healing cooldown expiration.</p>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>IP Address</th>
+                  <th>Detection Reason</th>
+                  <th>Auto-Expiry</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="blocklistTableBody">
+                <tr>
+                  <td colspan="4" class="empty-message">No quarantined IPs. System is running cleanly.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Incident Forensics Feed -->
+        <div class="glass-card panel-card">
+          <div class="panel-header">
+            <h3>🚨 Security Incident Forensics Log</h3>
+            <span class="badge badge-info" id="incidentCountBadge">0 Incidents</span>
+          </div>
+          <div class="incidents-feed" id="incidentsFeed">
+            <div class="empty-feed">No attack incidents detected in this session.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/dashboard.js"></script>
+</body>
+</html>

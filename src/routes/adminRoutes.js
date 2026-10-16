@@ -8,5 +8,6 @@ router.get('/metrics', AdminController.getMetrics);
 router.get('/attacks', AdminController.getAttacks);
 router.get('/blocked-ips', AdminController.getBlockedIps);
 router.post('/unblock/:ip', AdminController.unblockIp);
+router.post('/simulate', AdminController.triggerSimulation);
 
 module.exports = router;
