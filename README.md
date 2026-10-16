@@ -80,8 +80,8 @@ apCapstone/
 
 ### 2. Installation
 ```bash
-git clone <repository-url>
-cd apCapstone
+git clone https://github.com/sharmavikas18/cloud-ddos-protection-system.git
+cd cloud-ddos-protection-system
 npm install
 ```
 
