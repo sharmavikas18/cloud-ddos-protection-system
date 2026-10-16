@@ -28,6 +28,8 @@ This project delivers a resilient **Cloud DDoS Protection Gateway & Detection En
 
 ```
 apCapstone/
+├── docs/
+│   └── er_and_dfd_diagrams.md              # Entity-Relationship & Data Flow Diagrams (Level 0, 1, 2)
 ├── AP_Capstone_Evaluation_Rubric (1).docx  # Official Rubric
 ├── Dockerfile                              # Containerization specification
 ├── docker-compose.yml                      # Orchestrated deployment
